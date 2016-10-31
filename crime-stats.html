@@ -10,13 +10,13 @@
   </head>
   <body>
     <script src="https://d3js.org/d3.v4.min.js"></script>
-<!--    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script> -->
+    
     <script>
     
         // set the dimensions and margins of the graph
-        var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        var margin = {top: 40, right: 20, bottom: 130, left: 40},
             width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            height = 520 - margin.top - margin.bottom;
 
         // set the ranges
         var x = d3.scaleBand()
@@ -35,24 +35,34 @@
             .attr("transform", 
                   "translate(" + margin.left + "," + margin.top + ")");
 
+/*
         var chart2 = d3.select("body").append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", 
                   "translate(" + margin.left + "," + margin.top + ")");
+*/
 
         plotStat(chart1, 
                  "https://raw.githubusercontent.com/uwescience/datasci_course_materials/master/assignment6/sanfrancisco_incidents_summer_2014.csv",
+                 "PdDistrict",
                  "San Francisco Crime Frequency by Neighborhood", 
-                 "PdDistrict");
-
+                 [
+                   "The chart above was generated using real crime data from Summer 2014 of the US city of San Francisco, California.",
+                   "It can be seen from the above chart that Southern neighborhood of San Francisco has the highest rate of crime.",
+                   "Likewise, it can also be seen that the safest neighborhood is Richmond."
+                 ]
+        );
+        
+/*
         plotStat(chart2, 
                  "https://raw.githubusercontent.com/uwescience/datasci_course_materials/master/assignment6/seattle_incidents_summer_2014.csv",
                  "Seattle Crime Frequency by Neighborhood", 
                  "District/Sector");
-                 
-        function plotStat(svg, url, title, districtColName) {
+*/
+
+        function plotStat(svg, url, districtColName, title, description) {
         
           // get the data
           d3.csv(url, function(error, data) {
@@ -72,7 +82,7 @@
                 }
                 else {                  
                   freqByDistrictHash[data[row][districtColName]] = 1;
-                  console.log(row + ' ' + data[row][districtColName]);
+//                  console.log(row + ' ' + data[row][districtColName]);
                 }
               }
             }
@@ -112,6 +122,22 @@
               .style("font-size", "16px") 
               .style("text-decoration", "underline")  
               .text(title);
+              
+            svg.append("text")
+              .text("Description:")
+              .style("font-weight", "bold")
+              .attr("y", height + margin.bottom*1/2);
+
+            var dy = 1;              
+            
+            description.forEach(function(line) {
+              svg.append("text")
+                .text(line)
+                .attr("y", height + margin.bottom*1/2 + 20*dy);
+              
+              dy++;
+            });
+              
           });
         }
     
