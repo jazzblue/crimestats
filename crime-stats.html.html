@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Crime stats</title>
+
+    <style>
+      .bar { fill: steelblue; }
+    </style>
+  </head>
+  <body>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+<!--    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script> -->
+    <script>
+    
+        // set the dimensions and margins of the graph
+        var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        // set the ranges
+        var x = d3.scaleBand()
+                  .range([0, width])
+                  .padding(0.1);
+        var y = d3.scaleLinear()
+                  .range([height, 0]);
+                  
+        // append the svg object to the body of the page
+        // append a 'group' element to 'svg'
+        // moves the 'group' element to the top left margin
+        var chart1 = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", 
+                  "translate(" + margin.left + "," + margin.top + ")");
+
+        var chart2 = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", 
+                  "translate(" + margin.left + "," + margin.top + ")");
+
+        plotStat(chart1, 
+                 "https://raw.githubusercontent.com/uwescience/datasci_course_materials/master/assignment6/sanfrancisco_incidents_summer_2014.csv",
+                 "San Francisco Crime Frequency by Neighborhood", 
+                 "PdDistrict");
+
+        plotStat(chart2, 
+                 "https://raw.githubusercontent.com/uwescience/datasci_course_materials/master/assignment6/seattle_incidents_summer_2014.csv",
+                 "Seattle Crime Frequency by Neighborhood", 
+                 "District/Sector");
+                 
+        function plotStat(svg, url, title, districtColName) {
+        
+          // get the data
+          d3.csv(url, function(error, data) {
+            if (error) throw error;
+          
+            // Reduce data by district
+            freqByDistrictHash = {};
+            for (var row in data) {
+              if (row != "columns") {
+
+                if (data[row][districtColName].trim() == "") {  // If no district name specified label it as "other"
+                  data[row][districtColName] =  "other";
+                }
+              
+                if (data[row][districtColName] in freqByDistrictHash) {
+                  freqByDistrictHash[data[row][districtColName]]++;  // Increment if district is already in the list
+                }
+                else {                  
+                  freqByDistrictHash[data[row][districtColName]] = 1;
+                  console.log(row + ' ' + data[row][districtColName]);
+                }
+              }
+            }
+  
+            // Generate array out of hash
+            freqByDistrictArray = [];
+            for (var k in freqByDistrictHash) {
+              freqByDistrictArray.push({"district": k, "frequency": freqByDistrictHash[k]})
+            }
+          
+            x.domain(freqByDistrictArray.map(function(d) { return d.district; }));
+            y.domain([0, d3.max(freqByDistrictArray, function(d) { return d.frequency; })]);
+                            
+            // append the rectangles for the bar chart
+            svg.selectAll(".bar")
+                .data(freqByDistrictArray)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(d.district); })
+                .attr("width", x.bandwidth())
+                .attr("y", function(d) { return y(d.frequency); })
+                .attr("height", function(d) { return height - y(d.frequency); });
+          
+            // add the x Axis
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+          
+            // add the y Axis
+            svg.append("g")
+                .call(d3.axisLeft(y));
+                
+            svg.append("text")
+              .attr("x", (width / 2))             
+              .attr("y", 0 - (margin.top / 2))
+              .attr("text-anchor", "middle")  
+              .style("font-size", "16px") 
+              .style("text-decoration", "underline")  
+              .text(title);
+          });
+        }
+    
+    </script>  
+  </body>
+</html>
